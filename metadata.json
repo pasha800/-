@@ -1,0 +1,6 @@
+{
+  "name": "تێبینییەکانی مارکداون",
+  "description": "An elegant, secure, and modern Markdown notes app with reactive real-time local storage and easy cloud sync across devices.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

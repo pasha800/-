@@ -1,0 +1,40 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Outer cozy background overlay shadow -->
+    <path
+        android:fillColor="#115E59"
+        android:pathData="M28,26 C28,22.68 30.68,20 34,20 L62,20 L80,38 L80,84 C80,87.32 77.32,90 74,90 L34,90 C30.68,90 28,87.32 28,84 Z" />
+    <!-- White notebook sheet -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M30,24 C30,21.79 31.79,20 34,20 L60,20 L78,38 L78,84 C78,86.21 76.21,88 74,88 L34,88 C31.79,88 30,86.21 30,84 Z" />
+    <!-- Notebook fold corner -->
+    <path
+        android:fillColor="#E2E8F0"
+        android:pathData="M60,20 L60,38 L78,38 Z" />
+    <!-- Markdown "M" letter or some horizontal note lines -->
+    <!-- Line 1 (Header placeholder) -->
+    <path
+        android:fillColor="#0D9488"
+        android:pathData="M38,46 L58,46 C59,46 59,48 58,48 L38,48 C37,48 37,46 38,46 Z" />
+    <!-- Line 2 -->
+    <path
+        android:fillColor="#94A3B8"
+        android:pathData="M38,56 L70,56 C71,56 71,58 70,58 L38,58 C37,58 37,56 38,56 Z" />
+    <!-- Line 3 -->
+    <path
+        android:fillColor="#94A3B8"
+        android:pathData="M38,66 L70,66 C71,66 71,68 70,68 L38,68 C37,68 37,66 38,66 Z" />
+    <!-- Line 4 -->
+    <path
+        android:fillColor="#94A3B8"
+        android:pathData="M38,76 L54,76 C55,76 55,78 54,78 L38,78 C37,78 37,76 38,76 Z" />
+    <!-- Stylized pen across the page -->
+    <path
+        android:fillColor="#14B8A6"
+        android:pathData="M72,26 L82,36 L52,66 L42,66 L42,56 Z" />
+</vector>
+
