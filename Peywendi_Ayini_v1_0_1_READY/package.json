@@ -1,0 +1,52 @@
+{
+  "name": "peywendi-ayini",
+  "version": "1.0.1",
+  "description": "Offline Kurdish religious knowledge-linking desktop application with SQLite and JSON import/export.",
+  "main": "src/main.js",
+  "author": "Pasha",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "check": "node tools/check-project.js",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder --win nsis portable --x64"
+  },
+  "devDependencies": {
+    "electron": "43.1.1",
+    "electron-builder": "26.15.3"
+  },
+  "build": {
+    "appId": "com.pasha.peywendiayini",
+    "productName": "Peywendi Ayini",
+    "copyright": "Copyright © 2026 Pasha",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "src/**/*",
+      "samples/**/*",
+      "package.json"
+    ],
+    "asar": true,
+    "compression": "maximum",
+    "win": {
+      "target": [
+        { "target": "nsis", "arch": ["x64"] },
+        { "target": "portable", "arch": ["x64"] }
+      ],
+      "artifactName": "Peywendi-Ayini-${version}-${arch}-${target}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Peywendi Ayini",
+      "deleteAppDataOnUninstall": false
+    }
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
