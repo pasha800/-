@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - sports-archive-v1.3.0-global-clubs
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -49,11 +52,17 @@ jobs:
           assert blobs == 0
           print('automatic global football schema smoke test: ok; BLOB cells=0')
           PY
+      - name: Verify launchers use v1.3.1 collector
+        run: |
+          cd sports_archive_harvester_v1_2_0
+          grep -q "global_football_sync_v2.py --mode quick" QUICK_UPDATE_WINDOWS.bat
+          grep -q "global_football_sync_v2.py --mode full" FULL_COLLECTION_WINDOWS.bat
+          grep -q "global_football_sync_v2.py" GLOBAL_FOOTBALL_SYNC_WINDOWS.bat
       - name: Remove generated test database
         run: rm -rf sports_archive_harvester_v1_2_0/data sports_archive_harvester_v1_2_0/logs sports_archive_harvester_v1_2_0/__pycache__
       - name: Package ZIP
-        run: zip -r Sports_Archive_Harvester_v1.3.1.zip sports_archive_harvester_v1_2_0
+        run: zip -r Sports_Archive_Harvester_v1.3.1_FIXED.zip sports_archive_harvester_v1_2_0
       - uses: actions/upload-artifact@v4
         with:
-          name: Sports_Archive_Harvester_v1.3.1
-          path: Sports_Archive_Harvester_v1.3.1.zip
+          name: Sports_Archive_Harvester_v1.3.1_FIXED
+          path: Sports_Archive_Harvester_v1.3.1_FIXED.zip
