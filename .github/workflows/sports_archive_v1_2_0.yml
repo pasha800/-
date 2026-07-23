@@ -1,4 +1,4 @@
-name: Sports Archive v1.3.0 Global Football Build
+name: Sports Archive v1.3.1 Automatic Global Football Build
 
 on:
   push:
@@ -17,15 +17,15 @@ jobs:
       - name: Compile Python
         run: |
           cd sports_archive_harvester_v1_2_0
-          python -m py_compile sports_harvester.py sports_harvester_external_media.py enrich_players.py enrich_players_external.py global_football_sync.py
-      - name: SQLite external-media and global-schema smoke test
+          python -m py_compile sports_harvester.py sports_harvester_external_media.py enrich_players.py enrich_players_external.py global_football_sync.py global_football_sync_v2.py
+      - name: SQLite external-media and automatic global-schema smoke test
         run: |
           cd sports_archive_harvester_v1_2_0
           python sports_harvester_external_media.py report
           python - <<'PY'
           import sqlite3
           from pathlib import Path
-          import global_football_sync as g
+          import global_football_sync_v2 as g
           import sports_harvester_external_media as app
           a=app.Archive(); g.ensure_schema(a); a.close()
           p=Path('data/sports_archive.sqlite3')
@@ -33,9 +33,11 @@ jobs:
           assert c.execute('pragma integrity_check').fetchone()[0]=='ok'
           assert not c.execute('pragma foreign_key_check').fetchall()
           tables={r[0] for r in c.execute("select name from sqlite_master where type='table'")}
-          for required in ['media_files','team_media','player_media','seasons','provider_ids','standings']:
+          for required in ['media_files','team_media','player_media','seasons','provider_ids','standings','provider_files','provider_runs']:
               assert required in tables, required
           assert 'media' not in tables
+          columns={r[1] for r in c.execute('pragma table_info(matches)')}
+          assert 'season_id' in columns
           blobs=0
           for table in tables:
               if table.startswith('sqlite_'):
@@ -45,13 +47,13 @@ jobs:
                   name='"'+col[1].replace('"','""')+'"'
                   blobs += c.execute(f'select count(*) from {safe} where typeof({name})="blob"').fetchone()[0]
           assert blobs == 0
-          print('global football schema smoke test: ok; BLOB cells=0')
+          print('automatic global football schema smoke test: ok; BLOB cells=0')
           PY
       - name: Remove generated test database
         run: rm -rf sports_archive_harvester_v1_2_0/data sports_archive_harvester_v1_2_0/logs sports_archive_harvester_v1_2_0/__pycache__
       - name: Package ZIP
-        run: zip -r Sports_Archive_Harvester_v1.3.0.zip sports_archive_harvester_v1_2_0
+        run: zip -r Sports_Archive_Harvester_v1.3.1.zip sports_archive_harvester_v1_2_0
       - uses: actions/upload-artifact@v4
         with:
-          name: Sports_Archive_Harvester_v1.3.0
-          path: Sports_Archive_Harvester_v1.3.0.zip
+          name: Sports_Archive_Harvester_v1.3.1
+          path: Sports_Archive_Harvester_v1.3.1.zip
