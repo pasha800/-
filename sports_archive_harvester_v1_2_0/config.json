@@ -1,0 +1,13 @@
+{
+  "thesportsdb_api_key": "3",
+  "download_team_logos": true,
+  "download_player_photos": true,
+  "media_limits": {
+    "team_logo_bytes": 600000,
+    "player_photo_bytes": 900000
+  },
+  "incremental_overlap_days": 14,
+  "enrich_new_teams": true,
+  "enrich_new_players": true,
+  "request_timeout_seconds": 30
+}
