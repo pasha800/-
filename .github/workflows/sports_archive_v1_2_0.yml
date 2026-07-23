@@ -1,35 +1,28 @@
-name: Sports Archive v1.4.0 Knowledge Graph Package
+name: Sports Archive v1.4.0 Direct Package
 
 on:
   push:
     branches:
       - sports-archive-v1.4.0-knowledge-graph
-  pull_request:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
   package:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v4
-      - name: Verify required release files
-        run: |
-          test -f sports_archive_harvester_v1_2_0/sports_harvester.py
-          test -f sports_archive_harvester_v1_2_0/media_download_fix.py
-          test -f sports_archive_harvester_v1_2_0/global_football_sync_v3.py
-          test -f sports_archive_harvester_v1_2_0/knowledge_graph.py
-          test -f sports_archive_harvester_v1_2_0/FULL_SMART_BUILD_WINDOWS.bat
-          test -f sports_archive_harvester_v1_2_0/KNOWLEDGE_GRAPH_MAINTENANCE_WINDOWS.bat
-      - name: Remove repository metadata and runtime data
-        run: |
-          rm -rf sports_archive_harvester_v1_2_0/data
-          rm -rf sports_archive_harvester_v1_2_0/logs
-          find sports_archive_harvester_v1_2_0 -type d -name __pycache__ -prune -exec rm -rf {} +
-      - name: Package complete test project
-        run: zip -r Sports_Archive_Harvester_v1.4.0_KNOWLEDGE_GRAPH_TEST.zip sports_archive_harvester_v1_2_0
-      - uses: actions/upload-artifact@v4
+      - name: Checkout complete branch
+        uses: actions/checkout@v4
         with:
-          name: Sports_Archive_Harvester_v1.4.0_KNOWLEDGE_GRAPH_TEST
-          path: Sports_Archive_Harvester_v1.4.0_KNOWLEDGE_GRAPH_TEST.zip
+          ref: sports-archive-v1.4.0-knowledge-graph
+          fetch-depth: 1
+      - name: Upload complete project folder
+        uses: actions/upload-artifact@v4
+        with:
+          name: Sports_Archive_Harvester_v1.4.0_COMPLETE_TEST_PROJECT
+          path: sports_archive_harvester_v1_2_0/
+          if-no-files-found: error
+          include-hidden-files: true
+          compression-level: 6
+          retention-days: 30
