@@ -1,0 +1,42 @@
+@echo off
+setlocal
+cd /d "%~dp0"
+title Sports Archive Harvester v1.3.1 - FULL GLOBAL COLLECTION
+where python >nul 2>nul
+if errorlevel 1 (
+  echo Python 3.11 or newer was not found in PATH.
+  pause
+  exit /b 1
+)
+echo =====================================================================
+echo FULL GLOBAL COLLECTION v1.3.1
+echo 1) Historical national-team football from 1872
+
+echo 2) Historical club leagues and cups from no-key global sources
+
+echo Team logos and player photos remain external files linked to SQLite.
+echo Odds, predictions, news, video, banners and raw JSON are not stored.
+echo This first full run can take a long time because many seasons are checked.
+echo =====================================================================
+python -u sports_harvester_external_media.py full --enrich-limit 30
+set NATIONAL_CODE=%ERRORLEVEL%
+echo.
+python -u global_football_sync_v2.py --mode full
+set CLUB_CODE=%ERRORLEVEL%
+echo.
+python -u enrich_players_external.py --limit 30
+set PLAYER_CODE=%ERRORLEVEL%
+echo.
+python -u sports_harvester_external_media.py compact
+set COMPACT_CODE=%ERRORLEVEL%
+echo.
+python -u sports_harvester_external_media.py report
+set REPORT_CODE=%ERRORLEVEL%
+echo.
+echo Full live log: logs\live_sync.log
+pause
+if %NATIONAL_CODE% GEQ 3 exit /b %NATIONAL_CODE%
+if %CLUB_CODE% NEQ 0 exit /b %CLUB_CODE%
+if %PLAYER_CODE% GEQ 3 exit /b %PLAYER_CODE%
+if %COMPACT_CODE% NEQ 0 exit /b %COMPACT_CODE%
+exit /b %REPORT_CODE%
