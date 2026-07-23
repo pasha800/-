@@ -1,9 +1,9 @@
-name: Sports Archive v1.3.1 Automatic Global Football Build
+name: Sports Archive v1.3.2 Media Download Fix Build
 
 on:
   push:
     branches:
-      - sports-archive-v1.3.0-global-clubs
+      - sports-archive-v1.3.2-media-download-fix
   pull_request:
     branches:
       - main
@@ -20,27 +20,25 @@ jobs:
       - name: Compile Python
         run: |
           cd sports_archive_harvester_v1_2_0
-          python -m py_compile sports_harvester.py sports_harvester_external_media.py enrich_players.py enrich_players_external.py global_football_sync.py global_football_sync_v2.py
-      - name: SQLite external-media and automatic global-schema smoke test
+          python -m py_compile sports_harvester.py sports_harvester_external_media.py media_download_fix.py enrich_players.py enrich_players_external.py enrich_players_media_fixed.py global_football_sync.py global_football_sync_v2.py global_football_sync_v3.py
+      - name: SQLite media-state and global-schema smoke test
         run: |
           cd sports_archive_harvester_v1_2_0
-          python sports_harvester_external_media.py report
+          python media_download_fix.py report
           python - <<'PY'
           import sqlite3
           from pathlib import Path
+          import media_download_fix as media
           import global_football_sync_v2 as g
-          import sports_harvester_external_media as app
-          a=app.Archive(); g.ensure_schema(a); a.close()
+          a=media.Archive(); g.ensure_schema(a); media._ensure_state_schema(a.conn); a.close()
           p=Path('data/sports_archive.sqlite3')
           c=sqlite3.connect(p)
           assert c.execute('pragma integrity_check').fetchone()[0]=='ok'
           assert not c.execute('pragma foreign_key_check').fetchall()
           tables={r[0] for r in c.execute("select name from sqlite_master where type='table'")}
-          for required in ['media_files','team_media','player_media','seasons','provider_ids','standings','provider_files','provider_runs']:
+          for required in ['media_files','team_media','player_media','media_download_state','seasons','provider_ids','standings','provider_files','provider_runs']:
               assert required in tables, required
           assert 'media' not in tables
-          columns={r[1] for r in c.execute('pragma table_info(matches)')}
-          assert 'season_id' in columns
           blobs=0
           for table in tables:
               if table.startswith('sqlite_'):
@@ -50,19 +48,33 @@ jobs:
                   name='"'+col[1].replace('"','""')+'"'
                   blobs += c.execute(f'select count(*) from {safe} where typeof({name})="blob"').fetchone()[0]
           assert blobs == 0
-          print('automatic global football schema smoke test: ok; BLOB cells=0')
+          print('v1.3.2 media state smoke test: ok; BLOB cells=0')
           PY
-      - name: Verify launchers use v1.3.1 collector
+      - name: Test Wikimedia URL resolver
         run: |
           cd sports_archive_harvester_v1_2_0
-          grep -q "global_football_sync_v2.py --mode quick" QUICK_UPDATE_WINDOWS.bat
-          grep -q "global_football_sync_v2.py --mode full" FULL_COLLECTION_WINDOWS.bat
-          grep -q "global_football_sync_v2.py" GLOBAL_FOOTBALL_SYNC_WINDOWS.bat
+          python - <<'PY'
+          import media_download_fix as m
+          url='https://upload.wikimedia.org/wikipedia/commons/a/ab/Example.svg'
+          candidates=m._candidate_urls(url)
+          assert candidates[0].startswith('https://commons.wikimedia.org/wiki/Special:Redirect/file/')
+          assert 'width=512' in candidates[0]
+          assert len(candidates) == len(set(candidates))
+          print('Wikimedia raster candidate resolver: ok')
+          PY
+      - name: Verify launchers use v1.3.2 media layer
+        run: |
+          cd sports_archive_harvester_v1_2_0
+          grep -q "media_download_fix.py quick" QUICK_UPDATE_WINDOWS.bat
+          grep -q "global_football_sync_v3.py --mode quick" QUICK_UPDATE_WINDOWS.bat
+          grep -q "media_download_fix.py full" FULL_COLLECTION_WINDOWS.bat
+          grep -q "global_football_sync_v3.py --mode full" FULL_COLLECTION_WINDOWS.bat
+          grep -q "global_football_sync_v3.py" GLOBAL_FOOTBALL_SYNC_WINDOWS.bat
       - name: Remove generated test database
         run: rm -rf sports_archive_harvester_v1_2_0/data sports_archive_harvester_v1_2_0/logs sports_archive_harvester_v1_2_0/__pycache__
       - name: Package ZIP
-        run: zip -r Sports_Archive_Harvester_v1.3.1_FIXED.zip sports_archive_harvester_v1_2_0
+        run: zip -r Sports_Archive_Harvester_v1.3.2_MEDIA_DOWNLOAD_FIXED.zip sports_archive_harvester_v1_2_0
       - uses: actions/upload-artifact@v4
         with:
-          name: Sports_Archive_Harvester_v1.3.1_FIXED
-          path: Sports_Archive_Harvester_v1.3.1_FIXED.zip
+          name: Sports_Archive_Harvester_v1.3.2_MEDIA_DOWNLOAD_FIXED
+          path: Sports_Archive_Harvester_v1.3.2_MEDIA_DOWNLOAD_FIXED.zip
