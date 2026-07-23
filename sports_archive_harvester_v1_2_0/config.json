@@ -9,5 +9,15 @@
   "incremental_overlap_days": 14,
   "enrich_new_teams": true,
   "enrich_new_players": true,
-  "request_timeout_seconds": 30
+  "request_timeout_seconds": 45,
+  "global_sources": {
+    "api_football_key": "",
+    "api_football_league_ids": [],
+    "football_data_token": "",
+    "football_data_competitions": ["PL", "PD", "SA", "BL1", "FL1", "CL"],
+    "sportmonks_token": "",
+    "sportmonks_league_ids": [],
+    "enable_openligadb": true,
+    "historical_seasons": 5
+  }
 }
