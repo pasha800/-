@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - sports-archive-v1.4.0-knowledge-graph
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
