@@ -9,15 +9,28 @@
   "incremental_overlap_days": 14,
   "enrich_new_teams": true,
   "enrich_new_players": true,
-  "request_timeout_seconds": 45,
+  "request_timeout_seconds": 60,
   "global_sources": {
+    "enable_openfootball": true,
+    "openfootball_history_seasons": 0,
+    "openfootball_max_files_full": 0,
+    "openfootball_max_files_quick": 220,
+    "enable_football_data_csv": true,
+    "football_data_history_seasons": 20,
+    "football_data_league_codes": ["E0","E1","E2","E3","EC","SC0","SC1","SC2","SC3","D1","D2","I1","I2","SP1","SP2","F1","F2","N1","B1","P1","T1","G1"],
+    "enable_openligadb": true,
     "api_football_key": "",
     "api_football_league_ids": [],
+    "api_football_leagues_per_run": 120,
+    "api_football_history_seasons": 5,
     "football_data_token": "",
-    "football_data_competitions": ["PL", "PD", "SA", "BL1", "FL1", "CL"],
+    "football_data_competitions": [],
     "sportmonks_token": "",
     "sportmonks_league_ids": [],
-    "enable_openligadb": true,
-    "historical_seasons": 5
+    "sportmonks_leagues_per_run": 100,
+    "historical_seasons": 20,
+    "request_retries": 5,
+    "request_pause_seconds": 0.15,
+    "source_mesh_disabled": []
   }
 }
