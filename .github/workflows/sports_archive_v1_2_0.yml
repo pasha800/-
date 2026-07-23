@@ -1,0 +1,31 @@
+name: Sports Archive v1.4.0 Direct Package
+
+on:
+  push:
+    branches:
+      - sports-archive-v1.4.0-knowledge-graph
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout complete branch
+        uses: actions/checkout@v4
+        with:
+          ref: sports-archive-v1.4.0-knowledge-graph
+          fetch-depth: 1
+      - name: Upload complete project folder
+        uses: actions/upload-artifact@v4
+        with:
+          name: Sports_Archive_Harvester_v1.4.0_COMPLETE_TEST_PROJECT
+          path: sports_archive_harvester_v1_2_0/
+          if-no-files-found: error
+          include-hidden-files: true
+          compression-level: 6
+          retention-days: 30
