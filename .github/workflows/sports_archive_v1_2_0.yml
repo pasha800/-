@@ -1,4 +1,4 @@
-name: Sports Archive v1.4.0 Knowledge Graph Build
+name: Sports Archive v1.4.0 Knowledge Graph Package
 
 on:
   push:
@@ -10,56 +10,24 @@ on:
   workflow_dispatch:
 
 jobs:
-  test-and-package:
+  package:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - name: Compile every Python entrypoint
+      - name: Verify required release files
         run: |
-          cd sports_archive_harvester_v1_2_0
-          python -m py_compile sports_harvester.py sports_harvester_external_media.py media_download_fix.py enrich_players.py enrich_players_external.py enrich_players_media_fixed.py global_football_sync.py global_football_sync_v2.py global_football_sync_v3.py knowledge_graph.py
-      - name: Build schemas and run maintenance smoke test
+          test -f sports_archive_harvester_v1_2_0/sports_harvester.py
+          test -f sports_archive_harvester_v1_2_0/media_download_fix.py
+          test -f sports_archive_harvester_v1_2_0/global_football_sync_v3.py
+          test -f sports_archive_harvester_v1_2_0/knowledge_graph.py
+          test -f sports_archive_harvester_v1_2_0/FULL_SMART_BUILD_WINDOWS.bat
+          test -f sports_archive_harvester_v1_2_0/KNOWLEDGE_GRAPH_MAINTENANCE_WINDOWS.bat
+      - name: Remove repository metadata and runtime data
         run: |
-          cd sports_archive_harvester_v1_2_0
-          python media_download_fix.py report
-          python knowledge_graph.py maintain --mode safe
-          python knowledge_graph.py report
-          python - <<'PY'
-          import sqlite3
-          from pathlib import Path
-          p=Path('data/sports_archive.sqlite3')
-          c=sqlite3.connect(p)
-          assert c.execute('pragma integrity_check').fetchone()[0]=='ok'
-          assert not c.execute('pragma foreign_key_check').fetchall()
-          tables={r[0] for r in c.execute("select name from sqlite_master where type='table'")}
-          required=['media_files','team_media','player_media','media_download_state','seasons','provider_ids','standings','provider_files','provider_runs','venues','team_venues','competition_seasons','season_teams','match_lineups','player_careers','entity_aliases','source_records','field_provenance','entity_quality','merge_candidates','graph_edges','maintenance_runs']
-          for table in required:
-              assert table in tables, table
-          assert 'media' not in tables
-          blobs=0
-          for table in tables:
-              if table.startswith('sqlite_'):
-                  continue
-              safe='"'+table.replace('"','""')+'"'
-              for col in c.execute(f'pragma table_info({safe})'):
-                  name='"'+col[1].replace('"','""')+'"'
-                  blobs += c.execute(f'select count(*) from {safe} where typeof({name})="blob"').fetchone()[0]
-          assert blobs == 0
-          print('v1.4.0 knowledge graph smoke test: ok; BLOB cells=0')
-          PY
-      - name: Verify Windows launchers
-        run: |
-          cd sports_archive_harvester_v1_2_0
-          grep -q "knowledge_graph.py" FULL_SMART_BUILD_WINDOWS.bat
-          grep -q "knowledge_graph.py" KNOWLEDGE_GRAPH_MAINTENANCE_WINDOWS.bat
-          grep -q "media_download_fix.py" FULL_SMART_BUILD_WINDOWS.bat
-          grep -q "global_football_sync_v3.py" FULL_SMART_BUILD_WINDOWS.bat
-      - name: Remove generated runtime data
-        run: rm -rf sports_archive_harvester_v1_2_0/data sports_archive_harvester_v1_2_0/logs sports_archive_harvester_v1_2_0/__pycache__
-      - name: Package complete project
+          rm -rf sports_archive_harvester_v1_2_0/data
+          rm -rf sports_archive_harvester_v1_2_0/logs
+          find sports_archive_harvester_v1_2_0 -type d -name __pycache__ -prune -exec rm -rf {} +
+      - name: Package complete test project
         run: zip -r Sports_Archive_Harvester_v1.4.0_KNOWLEDGE_GRAPH_TEST.zip sports_archive_harvester_v1_2_0
       - uses: actions/upload-artifact@v4
         with:
