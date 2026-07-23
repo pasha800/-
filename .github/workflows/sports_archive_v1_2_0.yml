@@ -1,0 +1,69 @@
+name: Sports Archive v1.5.0 World Source Mesh
+
+on:
+  push:
+    branches:
+      - sports-archive-v1.5.0-world-source-mesh
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  test-and-package:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile all Python entrypoints
+        run: |
+          cd sports_archive_harvester_v1_2_0
+          python -m py_compile sports_harvester.py sports_harvester_external_media.py media_download_fix.py enrich_players.py enrich_players_external.py enrich_players_media_fixed.py global_football_sync.py global_football_sync_v2.py global_football_sync_v3.py knowledge_graph.py world_source_mesh.py
+      - name: Initialize and validate schemas without network
+        run: |
+          cd sports_archive_harvester_v1_2_0
+          python world_source_mesh.py report
+          python knowledge_graph.py --report-only
+          python - <<'PY'
+          import sqlite3
+          from pathlib import Path
+          import media_download_fix as media
+          import world_source_mesh as mesh
+          a=media.Archive()
+          media._ensure_state_schema(a.conn)
+          mesh.ensure_schema(a)
+          a.close()
+          p=Path('data/sports_archive.sqlite3')
+          c=sqlite3.connect(p)
+          assert c.execute('pragma integrity_check').fetchone()[0]=='ok'
+          assert not c.execute('pragma foreign_key_check').fetchall()
+          tables={r[0] for r in c.execute("select name from sqlite_master where type='table'")}
+          required=['source_mesh_catalog','source_mesh_checkpoint','source_mesh_runs','provider_ids','provider_files','provider_runs','seasons','standings','venues','entity_aliases','source_records','entity_quality','merge_candidates','graph_edges','media_download_state']
+          for table in required:
+              assert table in tables, table
+          assert 'media' not in tables
+          print('v1.5.0 schema integrity: ok')
+          PY
+      - name: Verify launchers
+        run: |
+          cd sports_archive_harvester_v1_2_0
+          grep -q "world_source_mesh.py sync --mode full" FULL_SMART_BUILD_WINDOWS.bat
+          grep -q "world_source_mesh.py" WORLD_SOURCE_MESH_WINDOWS.bat
+          grep -q "knowledge_graph.py" FULL_SMART_BUILD_WINDOWS.bat
+      - name: Remove generated runtime data
+        run: rm -rf sports_archive_harvester_v1_2_0/data sports_archive_harvester_v1_2_0/logs sports_archive_harvester_v1_2_0/__pycache__
+      - name: Upload complete project
+        uses: actions/upload-artifact@v4
+        with:
+          name: Sports_Archive_Harvester_v1.5.0_WORLD_SOURCE_MESH
+          path: sports_archive_harvester_v1_2_0/
+          if-no-files-found: error
+          include-hidden-files: true
+          compression-level: 6
+          retention-days: 30
